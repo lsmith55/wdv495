@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Anime List</title>
+    <style>
+        body { font-family: 'Courier New', Courier, monospace;
+    }
+        .card { border: 3px solid #05400f; padding: 10px; margin: 10px 0; 
+    }
+        img { width: 100px;}
+    </style>
+</head>
+<body>
+    <h1>Trending Anime</h1>
+    <div id="results"></div>
+
+    <script>
+        const query = `
+        query {
+            Page(perPage: 12) { 
+                media(sort: TRENDING_DESC, type: ANIME) {
+                    title { 
+                        english 
+                        romaji 
+                    }
+                    coverImage { large }
+                    averageScore
+                    episodes
+                    status
+                    seasonYear
+                    genres
+                }
+            }
+        }
+        `;
+
+        fetch('https://graphql.anilist.co', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: query })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const animeList = data.data.Page.media;
+            const resultsDiv = document.getElementById('results');
+
+            animeList.forEach(anime => {
+                const title = anime.title.english || anime.title.romaji;
+
+                resultsDiv.innerHTML += `
+                    <div class="card">
+                        <img src="${anime.coverImage.large}">
+                        <h3>${title}</h3>
+                        <p>Score: ${anime.averageScore}</p>
+                        <p>Year: ${anime.seasonYear}</p>
+                        <p>Episodes: ${anime.episodes}</p>
+                        <p>Status: ${anime.status}</p>
+                        <p>Genres: ${anime.genres.join(', ')}</p>
+                    </div>
+                `;
+            });
+        });
+    </script>
+</body>
+</html>
